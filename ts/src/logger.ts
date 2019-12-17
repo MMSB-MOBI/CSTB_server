@@ -1,4 +1,5 @@
 import winston = require('winston');
+const { combine, timestamp, label, printf } = winston.format;
 
 const config = {
     levels: {
@@ -34,11 +35,17 @@ function createFileTransport(path:string="./myNodeApp.log"):winston.transports.F
     return files;
 }
 
+const myFormat = printf(({ level, message, label, timestamp }) => {
+  return `${timestamp} ${level}: ${message}`;
+});
+
 let consoleT = new winston.transports.Console(
   { 
     format: winston.format.combine(
       winston.format.colorize(),
-      winston.format.simple()
+      winston.format.simple(),
+      timestamp(),
+      myFormat
     )
 });
 winston.add(consoleT);

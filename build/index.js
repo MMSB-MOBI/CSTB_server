@@ -48,6 +48,15 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
             });
         });
     });
+    app.get('/tree', (req, res) => {
+        var nano = require('nano')(param.url_treeDB);
+        nano.request({ db: param.name_treedb, doc: "maxi_tree" }, (err, data) => {
+            let tree_json = data["tree"].replace(/"/g, "'");
+            tree_json = tree_json.replace(/ : [^']*/g, "");
+            tree_json = tree_json.replace(/'/g, '"');
+            res.json(JSON.parse(tree_json));
+        });
+    });
     app.get('/test', function (req, res) {
         res.send('Performing test');
         // logger.info(__dirname);
@@ -64,7 +73,7 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                 "https_proxy" : "",
                 "HTTPS_PROXY" : ""*/
             },
-            "modules": ["crispr-tools"],
+            "modules": ["crispr-tools", "pycouch"],
             "jobProfile": "crispr-dev",
             "script": `${param.coreScriptsFolder}/crispr_workflow.sh`
         };
@@ -105,12 +114,14 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                     "pam": data.pam,
                     "sl": data.sgrna_length,
                     "URL_CRISPR": param.url_vService,
-                    "SPECIE_REF_JSON": param.specieRef,
+                    "NAME_TAXON": param.name_taxondb,
+                    "NAME_TREE": param.name_treedb,
+                    "URL_TREE_TAXON": param.url_tree_taxonDB,
                     "seq": data.seq,
                     "n": data.n,
                     "pid": data.pid
                 },
-                "modules": ["crispr-tools", "blast+"],
+                "modules": ["crispr-tools", "blast+", "pycouch"],
                 "jobProfile": "crispr-dev",
                 "script": `${param.coreScriptsFolder}/crispr_workflow_specific.sh`
             };
@@ -130,7 +141,7 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                         logger.info(`JOB completed-- Found stuff`);
                         logger.info(`${utils.inspect(buffer, false, null)}`);
                         let res = buffer.out;
-                        ans.data = [res.data, res.not_in, res.tag, res.number_hits, res.data_card, res.gi, res.gene];
+                        ans.data = [res.data, res.not_in, res.tag, res.number_hits, res.data_card, res.gi, res.size, res.gene];
                     }
                     socket.emit('resultsSpecific', ans);
                 });
@@ -150,9 +161,11 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                     "pam": data.pam,
                     "sl": data.sgrna_length,
                     "URL_CRISPR": param.url_vService,
-                    "SPECIE_REF_JSON": param.specieRef
+                    "NAME_TAXON": param.name_taxondb,
+                    "NAME_TREE": param.name_treedb,
+                    "URL_TREE_TAXON": param.url_tree_taxonDB
                 },
-                "modules": ["crispr-tools"],
+                "modules": ["crispr-tools", "pycouch"],
                 "jobProfile": "crispr-dev",
                 "script": `${param.coreScriptsFolder}/crispr_workflow.sh`
             };
@@ -184,7 +197,7 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                         let res = buffer.out;
                         logger.info(`JOB completed\n${utils.format(buffer.out)}`);
                         //   ans.data = [res.data, res.not_int,  res.tag, res.number_hits];
-                        ans.data = [res.data, res.not_in, res.tag, res.number_hits, res.data_card, res.gi];
+                        ans.data = [res.data, res.not_in, res.tag, res.number_hits, res.data_card, res.gi, res.size];
                     }
                     socket.emit('resultsAllGenomes', ans);
                 });

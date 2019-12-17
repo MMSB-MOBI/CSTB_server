@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const winston = require("winston");
 exports.logger = winston;
+const { combine, timestamp, label, printf } = winston.format;
 const config = {
     levels: {
         error: 0,
@@ -30,8 +31,11 @@ function createFileTransport(path = "./myNodeApp.log") {
         format: winston.format.combine(winston.format.simple()) });
     return files;
 }
+const myFormat = printf(({ level, message, label, timestamp }) => {
+    return `${timestamp} ${level}: ${message}`;
+});
 let consoleT = new winston.transports.Console({
-    format: winston.format.combine(winston.format.colorize(), winston.format.simple())
+    format: winston.format.combine(winston.format.colorize(), winston.format.simple(), timestamp(), myFormat)
 });
 winston.add(consoleT);
 //let fileDefaultTransport:winston.transports.FileTransportInstance = createFileTransport();
