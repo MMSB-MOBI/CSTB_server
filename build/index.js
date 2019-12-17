@@ -73,7 +73,7 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                 "https_proxy" : "",
                 "HTTPS_PROXY" : ""*/
             },
-            "modules": ["crispr-tools"],
+            "modules": ["crispr-tools", "pycouch"],
             "jobProfile": "crispr-dev",
             "script": `${param.coreScriptsFolder}/crispr_workflow.sh`
         };
@@ -121,7 +121,7 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                     "n": data.n,
                     "pid": data.pid
                 },
-                "modules": ["crispr-tools", "blast+"],
+                "modules": ["crispr-tools", "blast+", "pycouch"],
                 "jobProfile": "crispr-dev",
                 "script": `${param.coreScriptsFolder}/crispr_workflow_specific.sh`
             };
@@ -165,7 +165,7 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                     "NAME_TREE": param.name_treedb,
                     "URL_TREE_TAXON": param.url_tree_taxonDB
                 },
-                "modules": ["crispr-tools"],
+                "modules": ["crispr-tools", "pycouch"],
                 "jobProfile": "crispr-dev",
                 "script": `${param.coreScriptsFolder}/crispr_workflow.sh`
             };

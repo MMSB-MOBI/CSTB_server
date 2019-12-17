@@ -87,7 +87,7 @@ app.get('/test', function (req, res) {
             "https_proxy" : "",
             "HTTPS_PROXY" : ""*/
         },
-        "modules" : ["crispr-tools"],
+        "modules" : ["crispr-tools", "pycouch"],
         "jobProfile" : "crispr-dev",
         "script" : `${param.coreScriptsFolder}/crispr_workflow.sh`
     };
@@ -146,7 +146,7 @@ _io.on('connection', (socket)=>{
                 "pid" : data.pid
 
             },
-            "modules" : ["crispr-tools", "blast+"],
+            "modules" : ["crispr-tools", "blast+", "pycouch"],
             "jobProfile" : "crispr-dev",
             "script" : `${param.coreScriptsFolder}/crispr_workflow_specific.sh`
         };
@@ -196,7 +196,7 @@ _io.on('connection', (socket)=>{
                 "NAME_TREE" : param.name_treedb,
                 "URL_TREE_TAXON" : param.url_tree_taxonDB
             },
-            "modules" : ["crispr-tools"],
+            "modules" : ["crispr-tools", "pycouch"],
             "jobProfile" : "crispr-dev",
             "script" : `${param.coreScriptsFolder}/crispr_workflow.sh`
         };
