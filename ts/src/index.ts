@@ -64,10 +64,13 @@ app.get('/kill/:jobid',  (req, res) => {
 app.get('/tree', (req, res) => {
   var nano= require('nano')(param.url_treeDB);
   nano.request({db:param.name_treedb, doc:"maxi_tree"}, (err, data) => {
-    let tree_json = data["tree"].replace(/"/g, "'");
-    tree_json = tree_json.replace(/ : [^']*/g, "");
-    tree_json = tree_json.replace(/'/g, '"');
-    res.json(JSON.parse(tree_json))
+   
+
+    try {
+        res.json(data.tree);
+    } catch (e) {
+        res.status(500).json({ error: e.message, stack: e.stack });
+    }
   })
 })
 
