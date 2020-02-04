@@ -196,10 +196,11 @@ _io.on('connection', (socket)=>{
                 "sl" : data.sgrna_length,
                 "URL_CRISPR" : param.url_vService,
                 "NAME_TAXON" : param.name_taxondb,
-                "NAME_TREE" : param.name_treedb,
-                "URL_TREE_TAXON" : param.url_tree_taxonDB
+                "NAME_GENOME" : param.name_genomedb,
+                "URL_TREE_TAXON" : param.url_tree_taxonDB,
+                "COUCH_ENDPOINT": param.couch_endpoint
             },
-            "modules" : ["crispr-tools", "pycouch"],
+            "modules" : ["crispr-prod"],
             "jobProfile" : "crispr-dev",
             "script" : `${param.coreScriptsFolder}/crispr_workflow.sh`
         };

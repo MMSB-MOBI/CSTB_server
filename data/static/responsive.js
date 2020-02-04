@@ -386,10 +386,9 @@ function submitSetupAllGenome(){
 	$('#other_parameters').hide()
 
 	$('#Waiting').show()
-
   socket.emit('submitAllGenomes', {
-      "gi":$("#tree_include").jstree('get_bottom_selected', true).map(node => node.text),
-      "gni":$("#tree_exclude").jstree('get_bottom_selected', true).map(node => node.text),
+      "gi":$("#tree_include").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
+      "gni":$("#tree_exclude").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
       "pam":$("select[name='pam_AllG'] > option:selected").val(),
       "sgrna_length":$("select[name='sgrna-length_AllG'] > option:selected").val()
     });
@@ -406,9 +405,10 @@ function submitSpecificGene(n_gene, percent_id, pam, sgrna_length){
 	$('#other_parameters_sg').hide();
 	$('#Waiting').show();
 
+
 	socket.emit("submitSpecific", { "seq"   : final_sequence,
-									"gi"   : $("#tree_include_sg").jstree('get_bottom_selected', true).map(node => node.text),
-									"gni"  : $("#tree_exclude_sg").jstree('get_bottom_selected', true).map(node => node.text),
+									"gi"   : $("#tree_include_sg").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
+									"gni"  : $("#tree_exclude_sg").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
 									"n"     : n_gene,
 									"pid"   : percent_id,
 									"pam"   : pam,
