@@ -112,6 +112,25 @@ app.get('/download/:jm_id/:job_id', (req,res) => {
     res.download(_path);
 });
 
+app.get('/test_pycouch', (req,res) => {
+        let jobOpt = {
+            "exportVar" : {
+                "COUCH_ENDPOINT": param.couch_endpoint
+            },
+            "modules" : ["crispr-prod"],
+            "jobProfile" : "crispr-dev",
+            "script" : `${param.coreScriptsFolder}/test_pycouch.sh`
+        };
+        logger.info(`Trying to push ${utils.format(jobOpt)}`);
+
+        let job = jobManager.push(jobOpt);
+        job.on("ready", () => {
+            res.send(job.id);
+            logger.info(`JOB ${job.id} sumitted`);
+
+        });
+})
+
 
 /*
     Socket management

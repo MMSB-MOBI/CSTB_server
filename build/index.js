@@ -91,6 +91,22 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
         let _path = `/data/dev/crispr/tmp/${req.params.jm_id}/${req.params.job_id}/results_allgenome.txt`;
         res.download(_path);
     });
+    app.get('/test_pycouch', (req, res) => {
+        let jobOpt = {
+            "exportVar": {
+                "COUCH_ENDPOINT": param.couch_endpoint
+            },
+            "modules": ["crispr-prod"],
+            "jobProfile": "crispr-dev",
+            "script": `${param.coreScriptsFolder}/test_pycouch.sh`
+        };
+        logger.info(`Trying to push ${utils.format(jobOpt)}`);
+        let job = jobManager.push(jobOpt);
+        job.on("ready", () => {
+            res.send(job.id);
+            logger.info(`JOB ${job.id} sumitted`);
+        });
+    });
     /*
         Socket management
     */
