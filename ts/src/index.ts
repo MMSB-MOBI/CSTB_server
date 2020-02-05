@@ -249,8 +249,8 @@ _io.on('connection', (socket)=>{
                             logger.info(`JOB completed-- empty search\n${utils.format(buffer.emptySearch)}`);
                             ans.data = ["Search yielded no results.", buffer.emptySearch];
                         } else {
-                            let res = buffer.out;
-                            logger.info(`JOB completed\n${utils.format(buffer.out)}`);
+                            let res = buffer;
+                            logger.info(`JOB completed\n${utils.format(buffer)}`);
                         //   ans.data = [res.data, res.not_int,  res.tag, res.number_hits];
                             ans.data = [res.data, res.not_in,  res.tag, res.number_hits, res.data_card, res.gi, res.size];
 
