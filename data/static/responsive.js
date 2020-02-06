@@ -160,6 +160,7 @@ function treatResults(results, isSg) {
 		let data_card = data[4];
 		let gi = data[5];
 		let size = data[6];
+		let number_treated_hits = data[7];
 		let node = document.createElement("result-page");
 		let resDiv = document.querySelector("#ResGraph");
 		resDiv.appendChild(node);
@@ -178,7 +179,11 @@ function treatResults(results, isSg) {
 
 		console.log("bip");
 		console.dir(res);
-		infos = '<p>' + number_hits + ' hits have been found for this research.';
+		infos = '<p>' + number_hits + ' hits have been found for this research';
+		if (parseInt(number_hits) > parseInt(number_treated_hits)){
+			infos += '. The first ' + number_treated_hits + ' have been treated';
+		}
+		
 		if (parseInt(number_hits) > 100) {
 			infos += '. Only the best 100 are written below. Download the result file to get more hits.'
 		}

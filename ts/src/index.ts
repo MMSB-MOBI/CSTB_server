@@ -252,7 +252,7 @@ _io.on('connection', (socket)=>{
                             let res = buffer;
                             logger.info(`JOB completed\n${utils.format(buffer)}`);
                         //   ans.data = [res.data, res.not_int,  res.tag, res.number_hits];
-                            ans.data = [res.data, res.not_in,  res.tag, res.number_hits, res.data_card, res.gi, res.size];
+                            ans.data = [res.data, res.not_in,  res.tag, res.number_hits, res.data_card, res.gi, res.size, res.number_treated_hits];
 
                         }
                         socket.emit('resultsAllGenomes', ans);
