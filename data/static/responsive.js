@@ -1,4 +1,4 @@
-'use strict';
+let final_sequence = ''
 
 // last modif at 17 Jul 2019 10:59
 socket.on("resultsAllGenomes", function (data) {
@@ -18,6 +18,11 @@ socket.on("resultsSpecific", function (data) {
 	console.dir(data);
 	treatResults(data, true);
 });
+
+socket.on("workflowError", function(msg) {
+	console.log("Error occurs");
+	treatError(msg);
+}) 
 
 // *********************************************
 //              *  TREE FEATURES *
@@ -145,6 +150,13 @@ function writeResults(obj) {
 	return out;
 }
 
+function treatError(msg) {
+	$('#Waiting').hide()
+	$("#NoResult").show();
+	infos = '<p> An error occured </p> <p> ' + msg + '</p>'
+	$("#no_result").html(infos);
+}
+
 function treatResults(results, isSg) {
 	$("#Waiting").hide();
 	var data = results.data;
@@ -253,7 +265,7 @@ function verifyFasta(seq) {
 	var nbre_seq = 0
 	var seq_finale = ''
 	var sequence_split = seq.split('\n')
-	for (i = 0; i < sequence_split.length; i++) {
+	for (let i = 0; i < sequence_split.length; i++) {
 		if (sequence_split[i][0] == '>') {
 			nbre_seq += 1
 			if (nbre_seq > 1) {
@@ -262,7 +274,7 @@ function verifyFasta(seq) {
 			} // if
 		} // if
 		else {
-			for (j = 0; j < sequence_split[i].length; j++) {
+			for (let j = 0; j < sequence_split[i].length; j++) {
 				if (!(authorized.includes(sequence_split[i][j]))) {
 					error = "Wrong sequence. Only nucleotide characters authorized"
 					return [error, 0]
@@ -314,13 +326,13 @@ function treatFastaFile() {
 }
 
 function displaySequence() {
-	sequence = $('#seq').val()
-	error_fasta = verifyFasta(sequence)
+	let sequence = $('#seq').val()
+	let error_fasta = verifyFasta(sequence)
 	if (error_fasta[0] != "no error") {
 		window.alert('Sequence not in fasta format')
 		return false
 	}
-	final_sequence = error_fasta[1]
+	final_sequence = error_fasta[1];
 	if (final_sequence == '') {
 		window.alert('Empty sequence')
 		return false

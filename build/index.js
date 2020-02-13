@@ -49,7 +49,7 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
         });
     });
     app.get('/tree', (req, res) => {
-        var nano = require('nano')(param.url_treeDB);
+        var nano = require('nano')(param.couch_endpoint);
         nano.request({ db: param.name_treedb, doc: "maxi_tree" }, (err, data) => {
             try {
                 res.json(data.tree);
@@ -131,15 +131,15 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                     "gni": data.gni.join('&'),
                     "pam": data.pam,
                     "sl": data.sgrna_length,
-                    "URL_CRISPR": param.url_vService,
+                    "MOTIF_BROKER_ENDPOINT": param.motif_broker_endpoint,
                     "NAME_TAXON": param.name_taxondb,
-                    "NAME_TREE": param.name_treedb,
-                    "URL_TREE_TAXON": param.url_tree_taxonDB,
+                    "NAME_GENOME": param.name_genomedb,
                     "seq": data.seq,
                     "n": data.n,
-                    "pid": data.pid
+                    "pid": data.pid,
+                    "COUCH_ENDPOINT": param.couch_endpoint
                 },
-                "modules": ["crispr-tools", "blast+", "pycouch"],
+                "modules": ["crispr-prod", "blast+"],
                 "jobProfile": "crispr-dev",
                 "script": `${param.coreScriptsFolder}/crispr_workflow_specific.sh`
             };
@@ -150,20 +150,33 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                 stdout.on('data', (d) => { _buffer += d.toString(); })
                     .on('end', () => {
                     let ans = { "data": undefined };
-                    let buffer = JSON.parse(_buffer);
+                    let buffer;
+                    try {
+                        buffer = JSON.parse(_buffer);
+                    }
+                    catch (e) {
+                        socket.emit('workflowError', "Can't parse sbatch output");
+                        return;
+                    }
                     if (buffer.hasOwnProperty("emptySearch")) {
                         logger.info(`JOB completed-- empty search\n${utils.format(buffer.emptySearch)}`);
                         ans.data = ["Search yielded no results.", buffer.emptySearch];
+                        socket.emit('resultsSpecific', ans);
+                    }
+                    else if (buffer.hasOwnProperty("error")) {
+                        logger.info(`JOB completed-- handled error\n${utils.format(buffer.error)}`);
+                        socket.emit('workflowError', buffer.error);
                     }
                     else {
                         logger.info(`JOB completed-- Found stuff`);
                         logger.info(`${utils.inspect(buffer, false, null)}`);
-                        let res = buffer.out;
+                        let res = buffer;
                         ans.data = [res.data, res.not_in, res.tag, res.number_hits, res.data_card, res.gi, res.size, res.gene];
+                        socket.emit('resultsSpecific', ans);
                     }
-                    socket.emit('resultsSpecific', ans);
                 });
             });
+            job.on("lostJob", () => socket.emit('workflowError', 'Job has been lost'));
         });
         socket.on('submitAllGenomes', (data) => {
             logger.info(`socket:submitAllGenomes\n${utils.format(data)}`);
@@ -178,10 +191,9 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                     "gni": data.gni.join('&'),
                     "pam": data.pam,
                     "sl": data.sgrna_length,
-                    "URL_CRISPR": param.url_vService,
+                    "MOTIF_BROKER_ENDPOINT": param.motif_broker_endpoint,
                     "NAME_TAXON": param.name_taxondb,
                     "NAME_GENOME": param.name_genomedb,
-                    "URL_TREE_TAXON": param.url_tree_taxonDB,
                     "COUCH_ENDPOINT": param.couch_endpoint
                 },
                 "modules": ["crispr-prod"],
@@ -211,16 +223,22 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                     if (buffer.hasOwnProperty("emptySearch")) {
                         logger.info(`JOB completed-- empty search\n${utils.format(buffer.emptySearch)}`);
                         ans.data = ["Search yielded no results.", buffer.emptySearch];
+                        socket.emit('resultsAllGenomes', ans);
+                    }
+                    else if (buffer.hasOwnProperty("error")) {
+                        logger.info(`JOB completed-- handled error\n${utils.format(buffer.error)}`);
+                        socket.emit('workflowError', buffer.error);
                     }
                     else {
                         let res = buffer;
                         logger.info(`JOB completed\n${utils.format(buffer)}`);
                         //   ans.data = [res.data, res.not_int,  res.tag, res.number_hits];
                         ans.data = [res.data, res.not_in, res.tag, res.number_hits, res.data_card, res.gi, res.size, res.number_treated_hits];
+                        socket.emit('resultsAllGenomes', ans);
                     }
-                    socket.emit('resultsAllGenomes', ans);
                 });
             });
+            job.on("lostJob", () => socket.emit('workflowError', 'Job has been lost'));
         });
     }); // io closure
 }); // jm closure
