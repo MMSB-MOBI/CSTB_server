@@ -124,6 +124,25 @@
 			cursor: pointer;
 		}
 
+		#Waiting {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			min-height: 60vh;
+		}
+
+		footer {
+			margin-top: auto;
+
+			padding: 34px 0;
+		}
+
+		body {
+			display: flex;
+			min-height: 100vh;
+			flex-direction: column;
+		}
 
 	</style>
 
@@ -327,7 +346,7 @@
 
 		</div>
 
-		<div id="Waiting" classe="w3-padding w3-margin-left" style="display:none">
+		<div id="Waiting" style="display:none">
 			<div class="loader w3-margin"></div>
 			<h2 class="w3-center"> Processing your request... </h2>
 			<!-- <p id="result"></p> -->
@@ -363,12 +382,12 @@
 
 		<div style="height: auto;"></div>
 
-		<div id='footer' class="w3-container w3-teal w3-small w3-tail w3-light-grey w3-center">
+		<footer id='footer' class="w3-container w3-teal w3-small w3-tail w3-light-grey w3-center">
 				Made by : C.Hilpert, S. Hu, T. Sluys, B. Simon-Letcher<br>
 				Many thanks : C. Lesterlin, E. Guéguen, C. Knibbe, L. Guéguen, P. Garcia, D. De Vienne<br>
 				Oct.-Dec. 2016<br>
 				Master 1 Bioinformatics @ Claude Bernard University Lyon 1
-		</div>
+		</footer>
 
 
 	</body>
