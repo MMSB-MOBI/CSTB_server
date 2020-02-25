@@ -2,25 +2,20 @@ let final_sequence = ''
 
 // last modif at 17 Jul 2019 10:59
 socket.on("resultsAllGenomes", function (data) {
-	console.log("Showing All Genomes results");
-	console.dir(data);
 	treatResults(data, false);
 });
 
-socket.on("submitted", function (data) {
+/*socket.on("submitted", function (data) {
 	console.log("Submitted");
 	console.dir(data);
-});
+});*/
 
 
 socket.on("resultsSpecific", function (data) {
-	console.log("Showing Specific results");
-	console.dir(data);
 	treatResults(data, true);
 });
 
 socket.on("workflowError", function(msg) {
-	console.log("Error occurs");
 	treatError(msg);
 }) 
 
@@ -28,6 +23,8 @@ socket.on("workflowError", function(msg) {
 //              *  TREE FEATURES *
 // *********************************************
 function displayTree(suffix, searchType, treeType) {
+
+
 	var to = false;
 	$(searchType + suffix).keyup(function () {
 		if (to) { clearTimeout(to); }
@@ -37,11 +34,15 @@ function displayTree(suffix, searchType, treeType) {
 		}, 250);
 	});
 	$.jstree.defaults.search.show_only_matches = true;
+
 	// tree building
 
 	$(treeType + suffix).jstree({
 		"core": {
-			'data': { "url": "http://crispr-dev.ibcp.fr:80/tree", "dataType": "json" },
+			'data': { "url": "http://crispr-dev.ibcp.fr:80/tree", "dataType": "json", "error": function(e) {
+				//console.log("error database", e.status, e.statusText, e);
+				$(treeType + suffix).html(`Error while try to reach database (${e.status} : ${e.statusText})`)
+			}},
 			'themes': [
 				{ "dots": true }
 			],
@@ -52,7 +53,9 @@ function displayTree(suffix, searchType, treeType) {
 		},
 		"plugins": ["wholerow", "checkbox", "search", "dnd", "types"]
 	});
+
 	$(treeType + suffix).jstree().show_dots();
+
 }
 
 function selectOntree(treeName, reverseTree, j1, j2) {
@@ -80,7 +83,6 @@ function submitTree(treeName, isSG) {
 		window.alert('You have to choose at least one included genome')
 		return
 	}
-	console.dir("****************************************")
 	// let bla =
 	// console.dir(bla)
 	let suffix = (isSG) ? "_sg" : "";
@@ -188,9 +190,6 @@ function treatResults(results, isSg) {
 		node.setAttribute("org_names", gi);
 		node.setAttribute("size", JSON.stringify(size));
 
-
-		console.log("bip");
-		console.dir(res);
 		infos = '<p>' + number_hits + ' hits have been found for this research';
 		if (parseInt(number_hits) > parseInt(number_treated_hits)){
 			infos += '. The first ' + number_treated_hits + ' have been treated';
