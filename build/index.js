@@ -196,7 +196,7 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                     "NAME_GENOME": param.name_genomedb,
                     "COUCH_ENDPOINT": param.couch_endpoint
                 },
-                "modules": ["crispr-prod"],
+                "modules": ["crispr-prod/2.0.0"],
                 "jobProfile": "crispr-dev",
                 "script": `${param.coreScriptsFolder}/crispr_workflow.sh`
             };
