@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.logger = exports.setLogFile = exports.setLogLevel = void 0;
 const winston = require("winston");
 exports.logger = winston;
 const { combine, timestamp, label, printf } = winston.format;

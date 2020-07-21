@@ -164,7 +164,7 @@ function treatResults(results, isSg) {
 	var data = results.data;
 	var infos;
 
-	if (results.data.length >= 7) {
+	if (results.data.length >= 8) {
 
 		$('#Result').show()
 		let res = data[0];
@@ -173,22 +173,22 @@ function treatResults(results, isSg) {
 		let number_hits = data[3];
 		let data_card = data[4];
 		let gi = data[5];
-		let size = data[6];
-		let number_treated_hits = data[7];
+		let number_treated_hits = data[6];
+		let fasta_metadata = data[7]; 
 		let node = document.createElement("result-page");
 		let resDiv = document.querySelector("#ResGraph");
 		resDiv.appendChild(node);
 		node.style.display = "inline-block"
 
 		if (isSg) {
-			let gene = data[7];
+			let gene = data[8];
 			node.setAttribute("gene", JSON.stringify(gene));
 		}
 
 		node.setAttribute("complete_data", JSON.stringify(res));
 		node.setAttribute("all_data", JSON.stringify(data_card));
 		node.setAttribute("org_names", gi);
-		node.setAttribute("size", JSON.stringify(size));
+		node.setAttribute("fasta_metadata", JSON.stringify(fasta_metadata));
 
 		infos = '<p>' + number_hits + ' hits have been found for this research';
 		if (parseInt(number_hits) > parseInt(number_treated_hits)){
