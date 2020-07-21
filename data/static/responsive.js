@@ -210,7 +210,6 @@ function treatResults(results, isSg) {
 		}
 		let out = writeResults(res)
 		$('#infos').html(infos)
-		$("#ResTable").html(out);
 		display_download(tag)
 
 	}
@@ -221,25 +220,6 @@ function treatResults(results, isSg) {
 	}
 }
 
-// change active link for tab-nav and change results to show
-function clickNav(d) {
-	// check if clicked nav is not the active one
-	if (d.className != "nav-link active") {
-		let allNav = document.querySelectorAll(".nav-link");
-		// all nav-tab set to not active
-		allNav.forEach(e => e.className = "nav-link");
-		// active the one clicked
-		d.className = "nav-link active";
-		// show/hide results
-		if (d.id == "graphicResult") {
-			document.querySelector("result-page").style.display = "inline-block";
-			document.querySelector("#ResTable").style.display = "none";
-		} else if (d.id == "tableResult") {
-			document.querySelector("result-page").style.display = "none";
-			document.querySelector("#ResTable").style.display = "block";
-		}
-	}
-}
 
 // display or not organisms excluded
 function clickDrop(d) {
