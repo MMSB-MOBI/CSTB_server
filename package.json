@@ -17,13 +17,14 @@
   },
   "homepage": "https://github.com/glaunay/nCSTB#readme",
   "dependencies": {
-    "@mmsb/result_page": "^1.4.0",
-    "@types/express": "^4.17.2",
-    "@types/node": "^10.17.16",
+    "@mmsb/result_page": "^2.0.2",
+    "@types/express": "^4.17.6",
+    "@types/node": "^10.17.26",
     "commander": "^2.20.3",
     "express": "^4.17.1",
     "jsonfile": "^5.0.0",
-    "ms-jobmanager": "^2.1.1",
+    "ms-jobmanager": "2.1.0",
+    "nano": "^8.2.2",
     "socket-io": "^1.0.0",
     "socket.io": "^2.3.0",
     "winston": "^3.2.1"

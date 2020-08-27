@@ -12,7 +12,7 @@ const setLogFile = require("./logger").setLogFile;
 const jsonfile = require("jsonfile");
 let APP_PORT = 3002;
 //let OLD_CACHE = "/data/dev/crispr/tmp";
-let DATA_FOLDER = "/data/databases/mobi/crispr/reference_genomes";
+//let DATA_FOLDER = "/data/databases/mobi/crispr/reference_genomes";
 let jobManager = require('ms-jobmanager');
 let JM_ADRESS = "127.0.0.1";
 let JM_PORT = undefined;
@@ -86,9 +86,9 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
             stdout.on('data', (d) => { logger.info(`${d.toString()}`); });
         });
     });
-    app.get('/download/:jm_id/:job_id', (req, res) => {
-        logger.info(`==>${req.params.jm_id}/${req.params.job_id}`);
-        let _path = `/data/dev/crispr/tmp/${req.params.jm_id}/${req.params.job_id}/results_allgenome.txt`;
+    app.get('/download/:job_id', (req, res) => {
+        logger.info(`==>tmp/${req.params.job_id}`);
+        let _path = `/data/dev/crispr/tmp/${req.params.job_id}/${req.params.job_id}_results.tsv`;
         res.download(_path);
     });
     app.get('/test_pycouch', (req, res) => {
@@ -139,9 +139,10 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                     "pid": data.pid,
                     "COUCH_ENDPOINT": param.couch_endpoint
                 },
-                "modules": ["crispr-prod", "blast+"],
+                "modules": ["crispr-prod/3.0.0", "blast+"],
                 "jobProfile": "crispr-dev",
-                "script": `${param.coreScriptsFolder}/crispr_workflow_specific.sh`
+                "script": `${param.coreScriptsFolder}/crispr_workflow_specific.sh`,
+                "sysSettingsKey": "crispr-dev"
             };
             logger.info(`Trying to push ${utils.format(jobOpt)}`);
             let job = jobManager.push(jobOpt);
@@ -171,7 +172,7 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                         logger.info(`JOB completed-- Found stuff`);
                         logger.info(`${utils.inspect(buffer, false, null)}`);
                         let res = buffer;
-                        ans.data = [res.data, res.not_in, res.tag, res.number_hits, res.data_card, res.gi, res.size, res.gene];
+                        ans.data = [res.data, res.not_in, res.tag, res.number_hits, res.data_card, res.gi, res.number_treated_hits, res.fasta_metadata, res.gene];
                         socket.emit('resultsSpecific', ans);
                     }
                 });
@@ -196,9 +197,10 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                     "NAME_GENOME": param.name_genomedb,
                     "COUCH_ENDPOINT": param.couch_endpoint
                 },
-                "modules": ["crispr-prod/2.0.0"],
+                "modules": ["crispr-prod/3.0.0"],
                 "jobProfile": "crispr-dev",
-                "script": `${param.coreScriptsFolder}/crispr_workflow.sh`
+                "script": `${param.coreScriptsFolder}/crispr_workflow.sh`,
+                "sysSettingsKey": "crispr-dev"
             };
             logger.info(`Trying to push ${utils.format(jobOpt)}`);
             let job = jobManager.push(jobOpt);
@@ -233,7 +235,7 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
                         let res = buffer;
                         logger.info(`JOB completed\n${utils.format(buffer)}`);
                         //   ans.data = [res.data, res.not_int,  res.tag, res.number_hits];
-                        ans.data = [res.data, res.not_in, res.tag, res.number_hits, res.data_card, res.gi, res.size, res.number_treated_hits];
+                        ans.data = [res.data, res.not_in, res.tag, res.number_hits, res.data_card, res.gi, res.number_treated_hits, res.fasta_metadata];
                         socket.emit('resultsAllGenomes', ans);
                     }
                 });

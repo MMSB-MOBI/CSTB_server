@@ -164,7 +164,7 @@ function treatResults(results, isSg) {
 	var data = results.data;
 	var infos;
 
-	if (results.data.length >= 7) {
+	if (results.data.length >= 8) {
 
 		$('#Result').show()
 		let res = data[0];
@@ -173,34 +173,28 @@ function treatResults(results, isSg) {
 		let number_hits = data[3];
 		let data_card = data[4];
 		let gi = data[5];
-		let size = data[6];
-		let number_treated_hits = data[7];
+		let number_treated_hits = data[6];
+		let fasta_metadata = data[7]; 
 		let node = document.createElement("result-page");
 		let resDiv = document.querySelector("#ResGraph");
 		resDiv.appendChild(node);
 		node.style.display = "inline-block"
 
 		if (isSg) {
-			let gene = data[7];
+			let gene = data[8];
 			node.setAttribute("gene", JSON.stringify(gene));
 		}
 
 		node.setAttribute("complete_data", JSON.stringify(res));
 		node.setAttribute("all_data", JSON.stringify(data_card));
 		node.setAttribute("org_names", gi);
-		node.setAttribute("size", JSON.stringify(size));
+		node.setAttribute("fasta_metadata", JSON.stringify(fasta_metadata));
 
 		infos = '<p>' + number_hits + ' hits have been found for this research';
 		if (parseInt(number_hits) > parseInt(number_treated_hits)){
-			infos += '. The first ' + number_treated_hits + ' have been treated';
+			infos += '. Only the first ' + number_treated_hits + ' are shown on the graphical interface. All hits can be found in downloadable raw results file. ';
 		}
 		
-		if (parseInt(number_hits) > 100) {
-			infos += '. Only the best 100 are written below. Download the result file to get more hits.'
-		}
-		if (parseInt(number_hits) > 10000) {
-			infos += ' (only the best 10 000 are written to this file).</p>'
-		}
 		infos += '</br><i class="material-icons" id="drop_not_in off" class="drop" onclick="clickDrop(this)">arrow_drop_down</i>'
 		if (not_in != '') {
 			infos += '<p> All hits are absent from excluded genome(s) : ' + not_in;
@@ -210,7 +204,6 @@ function treatResults(results, isSg) {
 		}
 		let out = writeResults(res)
 		$('#infos').html(infos)
-		$("#ResTable").html(out);
 		display_download(tag)
 
 	}
@@ -221,25 +214,6 @@ function treatResults(results, isSg) {
 	}
 }
 
-// change active link for tab-nav and change results to show
-function clickNav(d) {
-	// check if clicked nav is not the active one
-	if (d.className != "nav-link active") {
-		let allNav = document.querySelectorAll(".nav-link");
-		// all nav-tab set to not active
-		allNav.forEach(e => e.className = "nav-link");
-		// active the one clicked
-		d.className = "nav-link active";
-		// show/hide results
-		if (d.id == "graphicResult") {
-			document.querySelector("result-page").style.display = "inline-block";
-			document.querySelector("#ResTable").style.display = "none";
-		} else if (d.id == "tableResult") {
-			document.querySelector("result-page").style.display = "none";
-			document.querySelector("#ResTable").style.display = "block";
-		}
-	}
-}
 
 // display or not organisms excluded
 function clickDrop(d) {
