@@ -192,15 +192,9 @@ function treatResults(results, isSg) {
 
 		infos = '<p>' + number_hits + ' hits have been found for this research';
 		if (parseInt(number_hits) > parseInt(number_treated_hits)){
-			infos += '. The first ' + number_treated_hits + ' have been treated';
+			infos += '. Only the first ' + number_treated_hits + ' are shown on the graphical interface. All hits can be found in downloadable raw results file. ';
 		}
 		
-		if (parseInt(number_hits) > 100) {
-			infos += '. Only the best 100 are written below. Download the result file to get more hits.'
-		}
-		if (parseInt(number_hits) > 10000) {
-			infos += ' (only the best 10 000 are written to this file).</p>'
-		}
 		infos += '</br><i class="material-icons" id="drop_not_in off" class="drop" onclick="clickDrop(this)">arrow_drop_down</i>'
 		if (not_in != '') {
 			infos += '<p> All hits are absent from excluded genome(s) : ' + not_in;
