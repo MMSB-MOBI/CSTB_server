@@ -2,6 +2,7 @@ let final_sequence = ''
 
 // last modif at 17 Jul 2019 10:59
 socket.on("resultsAllGenomes", function (data) {
+	console.log("resultsAllGenomes")
 	treatResults(data, false);
 });
 
@@ -202,7 +203,6 @@ function treatResults(results, isSg) {
 		else {
 			infos += '<p> No excluded genomes selected.</p>'
 		}
-		let out = writeResults(res)
 		$('#infos').html(infos)
 		display_download(tag)
 
@@ -373,18 +373,29 @@ function clearListView(suffix) {
 //            *  SUBMIT PARAMETERS *
 // *********************************************
 function submitSetupAllGenome() {
-	$('#Tabselection').hide()
-	$('#allg_tips').hide()
-	$('#list_selection').hide()
-	$('#other_parameters').hide()
+	console.log("submit")
 
-	$('#Waiting').show()
-	socket.emit('submitAllGenomes', {
-		"gi": $("#tree_include").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
-		"gni": $("#tree_exclude").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
-		"pam": $("select[name='pam_AllG'] > option:selected").val(),
-		"sgrna_length": $("select[name='sgrna-length_AllG'] > option:selected").val()
-	});
+	let email_confirmation = true; 
+	if ( ! $('#email').val()){
+		email_confirmation = window.confirm("You don't provide email. Are you sure you don't want to have access to your results later ?")
+	}
+
+	if(email_confirmation){
+		$('#Tabselection').hide()
+		$('#allg_tips').hide()
+		$('#list_selection').hide()
+		$('#other_parameters').hide()
+
+		$('#Waiting').show()
+		socket.emit('submitAllGenomes', {
+			"gi": $("#tree_include").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
+			"gni": $("#tree_exclude").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
+			"pam": $("select[name='pam_AllG'] > option:selected").val(),
+			"sgrna_length": $("select[name='sgrna-length_AllG'] > option:selected").val(),
+			"email" : $('#email').val()
+		});
+	}
+	
 
 }
 

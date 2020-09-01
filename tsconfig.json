@@ -23,7 +23,8 @@
   },
   "files": [ // path to the files to compile
       "./ts/src/index.ts",
-      "./ts/src/logger.ts"
+      "./ts/src/logger.ts",
+      "./ts/src/mailManager.ts"
   ],
   "exclude" : [  
    // "../taskobject"

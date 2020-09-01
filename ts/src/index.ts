@@ -1,27 +1,30 @@
 let express = require('express');
+const path = require('path');
 let app = express();
 let utils = require('util');
 let http = require('http').Server(app);
-
 let _io = require('socket.io')(http);
 
 const program = require("commander");
 const logger = require("./logger").logger;
 const setLogLevel = require("./logger").setLogLevel;
 const setLogFile = require("./logger").setLogFile;
+const fs = require("fs")
+let mailManager = require("./mailManager")
 
 import jsonfile = require('jsonfile');
+import { Socket } from 'dgram';
 
 let APP_PORT = 3002;
-//let OLD_CACHE = "/data/dev/crispr/tmp";
+let CACHE = "/data/dev/crispr/tmp";
 //let DATA_FOLDER = "/data/databases/mobi/crispr/reference_genomes";
+
+const STATICDIR = "/data/www_dev/crispr/lib/nCSTB/data/static"
 
 let jobManager = require('ms-jobmanager');
 
 let JM_ADRESS = "127.0.0.1";
 let JM_PORT = undefined;
-
-
 
 program
 .version('0.1.0')
@@ -35,6 +38,34 @@ if (!program.port)
 if (!program.conf)
     throw (`Please specify a conf`);
 
+function parseData(string_data:string) : [boolean, string | any] {
+    let ans = {"data" : undefined};
+    let buffer:any
+    try {
+        buffer = JSON.parse(string_data);
+    } catch (e) {
+        return [false, "Can't parse sbatch output"];
+    }
+
+    if (buffer.hasOwnProperty("emptySearch")) {
+        logger.info(`JOB completed-- empty search\n${utils.format(buffer.emptySearch)}`);
+        ans.data = ["Search yielded no results.", buffer.emptySearch];
+        return [true, ans];
+    }
+    else if (buffer.hasOwnProperty("error")){
+        logger.info(`JOB completed-- handled error\n${utils.format(buffer.error)}`)
+        return [false, buffer.error];
+    } else {
+        logger.info(`JOB completed-- Found stuff`);
+        logger.info(`${utils.inspect(buffer, false, null)}`);
+        let res = buffer;
+        ans.data = [res.data, res.not_in,  res.tag, res.number_hits, res.data_card, res.gi, res.number_treated_hits, res.fasta_metadata, res.gene];
+        return [true, ans]; 
+    }
+}
+
+
+mailManager.configure()
 let param = jsonfile.readFileSync(program.conf);
 
 JM_PORT = parseInt(program.port);
@@ -131,6 +162,13 @@ app.get('/test_pycouch', (req,res) => {
         });
 })
 
+app.get('/results/:job_id', (req, res) => {
+    logger.info("Restore results")
+    //res.send(`${req.params.job_id} results`)
+    res.sendFile(`${STATICDIR}/restore.html`);
+   //emit restore (job_id, directory)
+});
+
 
 /*
     Socket management
@@ -138,8 +176,25 @@ app.get('/test_pycouch', (req,res) => {
 http.listen(APP_PORT,()=>{
     logger.info(`Listening on port ${APP_PORT}`);
 });
+
 _io.on('connection', (socket)=>{
     logger.info('connection')
+
+    //socket on restored data (stdout)
+    //emit results
+
+    socket.on("restoreResults", (job_key) =>{
+        logger.info("restoreResults server")
+        const file = fs.readFileSync(`${CACHE}/${job_key}/${job_key}.out`)
+        const [status, answer] = parseData(file); 
+        if(status) {
+            socket.emit("displayResults", answer)
+        }
+        else{
+            socket.emit("workflowError", answer)
+        }
+
+    });
 
     socket.on("submitSpecific", (data) =>{
        // let x = data.seq;
@@ -178,7 +233,7 @@ _io.on('connection', (socket)=>{
 
         let job = jobManager.push(jobOpt);
         job.on("completed",(stdout, stderr) => {
-            
+            //send email
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
             .on('end',() => {
@@ -202,6 +257,8 @@ _io.on('connection', (socket)=>{
                 } else {
                     logger.info(`JOB completed-- Found stuff`);
                     logger.info(`${utils.inspect(buffer, false, null)}`);
+                    logger.info(typeof _buffer)
+                    logger.info(_buffer)
                     let res = buffer;
                     ans.data = [res.data, res.not_in,  res.tag, res.number_hits, res.data_card, res.gi, res.number_treated_hits, res.fasta_metadata, res.gene];
                     socket.emit('resultsSpecific', ans);
@@ -249,31 +306,16 @@ _io.on('connection', (socket)=>{
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
                     .on('end',() => {
-                        let buffer:any;
-                        try {
-                            buffer = JSON.parse(_buffer);
-                        } catch (e) {
-                            socket.emit('resultsAllGenomes', {"data": ["An error occured", "Please contact sys admin"]});
-                            return;
-                        }
-                        // JSON Parsing successfull
-                        let ans = {"data" : undefined};
-                        if (buffer.hasOwnProperty("emptySearch")) {
-                            logger.info(`JOB completed-- empty search\n${utils.format(buffer.emptySearch)}`);
-                            ans.data = ["Search yielded no results.", buffer.emptySearch];
-                            socket.emit('resultsAllGenomes', ans);
-                        }
-                        else if (buffer.hasOwnProperty("error")){
-                            logger.info(`JOB completed-- handled error\n${utils.format(buffer.error)}`)
-                            socket.emit('workflowError', buffer.error)
-                        } else {
-                            let res = buffer;
-                            logger.info(`JOB completed\n${utils.format(buffer)}`);
-                        //   ans.data = [res.data, res.not_int,  res.tag, res.number_hits];
-                            ans.data = [res.data, res.not_in,  res.tag, res.number_hits, res.data_card, res.gi, res.number_treated_hits, res.fasta_metadata];
-                            socket.emit('resultsAllGenomes', ans);
-                        }
+                        const [status, answer] = parseData(_buffer)
                         
+                        if(status) {
+                            socket.emit("resultsAllGenomes", answer)
+                            logger.info("Send email")
+                            mailManager.send(data.email, answer.data[2])
+                        }
+                        else{
+                            socket.emit("workflowError", answer)
+                        }
                     });
         
         });

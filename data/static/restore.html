@@ -1,0 +1,87 @@
+<!-- {% block content %} -->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>CSTB - Crispr Search Tool for Bacteria</title>
+
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="https://d3js.org/d3.v4.js"></script>
+		<script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3-scale-radial.js"></script>
+
+		<!-- component for result page -->
+		<script type="module" src="http://crispr-dev.ibcp.fr/@mmsb/result_page/dist/mycomponent/mycomponent.esm.js"></script>
+		<script nomodule="" src="http://crispr-dev.ibcp.fr/@mmsb/result_page/dist/mycomponent/mycomponent.js"></script>
+		
+		<!-- socket IO -->
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+		<script src="../../restore.js"></script>
+
+		<!-- JStree 
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/jstree.min.js"></script>
+		<script src="./responsive.js"></script> -->
+
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+
+		<!-- CSS -->
+		<link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.3/themes/default/style.min.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> 
+
+		<!-- modif begin -->
+		<link href="https://fonts.googleapis.com/css?family=Alfa+Slab+One|Permanent+Marker" rel="stylesheet">
+		<link rel="icon" href="/static/favicon.ico" />
+
+	</head>
+
+	<style>
+		a {
+			color: white;
+			font-weight: bold;
+		}
+
+		a:hover{
+			color: white;
+			font-weight: bold;
+			text-decoration: none;
+		}
+	</style>
+
+	<body>
+
+		<div class="w3-container w3-light-grey w3-center">
+			<h1 style="font-family: 'Alfa Slab One', cursive;" class="w3-opacity w3-hover-opacity-off">Crispr Search Tool for Bacteria</h1>
+			<img src="../../CSTB_logo_2.png" class="w3-opacity w3-hover-opacity-off" style="max-width:140px">
+			<p class="w3-wide w3-opacity" style="font-family: 'Permanent Marker', cursive">A user-friendly intuitive CRISPR target predictor for bacteria</p>
+		</div>
+
+		<div id="Waiting">
+			<p> Reload your results.... </p>
+		</div>
+
+		<div id="Result" style="display:none">
+
+		  <a id='result-file' class="w3-btn w3-green"></a>
+		  
+		  <div class="w3-panel w3-pale-green w3-bottombar w3-border w3-border-green w3-center" id="infos">
+
+		  </div>
+
+			<div id="ResGraph">
+			</div>
+		</div>
+
+		<div id="NoResult" style="display:none">
+			<div class="w3-panel w3-pale-red w3-border w3-border-red w3-center" id='no_result'>
+			</div>
+		</div>
+
+		<div style="height: auto;"></div>
+
+
+	</body>
+
+</html>
+<!-- {% endblock %} -->
