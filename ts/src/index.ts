@@ -310,8 +310,12 @@ _io.on('connection', (socket)=>{
                         
                         if(status) {
                             socket.emit("resultsAllGenomes", answer)
-                            logger.info("Send email")
-                            mailManager.send(data.email, answer.data[2])
+                            
+                            if (data.email){
+                                logger.info("Send email")
+                                mailManager.send(data.email, answer.data[2])
+                            }
+                            
                         }
                         else{
                             socket.emit("workflowError", answer)
