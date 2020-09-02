@@ -12,6 +12,7 @@ const fs = require("fs")
 const mailManager = require("./mailManager")
 const jobManager = require('ms-jobmanager');
 const jsonfile = require('jsonfile'); 
+const SearchFn = require('fs-search-worker').SearchFn; 
 
 const APP_PORT = 3002;
 const JM_ADRESS = "127.0.0.1";
@@ -47,7 +48,7 @@ function parseData(string_data:string) : [boolean, string | any] {
         return [false, buffer.error];
     } else {
         logger.info(`JOB completed-- Found stuff`);
-        logger.info(`${utils.inspect(buffer, false, null)}`);
+        //logger.info(`${utils.inspect(buffer, false, null)}`);
         let res = buffer;
         ans.data = [res.data, res.not_in,  res.tag, res.number_hits, res.data_card, res.gi, res.number_treated_hits, res.fasta_metadata, res.gene];
         return [true, ans]; 
@@ -138,15 +139,18 @@ _io.on('connection', (socket)=>{
 
     socket.on("restoreResults", (job_key) =>{
         logger.info("restoreResults server")
-        const file = fs.readFileSync(`${CACHE}/${job_key}/${job_key}.out`)
-        const [status, answer] = parseData(file); 
-        if(status) {
-            socket.emit("displayResults", answer)
-        }
-        else{
-            socket.emit("workflowError", answer)
-        }
-
+        //const file = fs.readFileSync(`${CACHE}/${job_key}/${job_key}.out`)
+        const searched_files = SearchFn(`${job_key}.out`, CACHE)
+        searched_files.then((finded) => {
+            //What to do if more than one file ? 
+            const file = fs.readFileSync(finded[0][0])
+            const [status, answer] = parseData(file); 
+            if (status) socket.emit("displayResults", answer);
+            else socket.emit("workflowError", answer);
+        }, (error) => {
+            if (error == "not found") socket.emit("restoreNotFound", job_key); 
+            else socket.emit("unknownError"); 
+        });
     });
 
     socket.on("submitSpecific", (data) =>{

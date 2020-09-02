@@ -11,6 +11,24 @@ socket.on('displayResults', (data) => {
     treatResults(data, false); 
 })
 
+socket.on("restoreNotFound", (key) => {
+	console.log("not found")
+	$("#Waiting").hide();
+	const html = `<h4>Results not available</h4> 
+	<p> Your results for job ${key} are not available. Relaunch your search. </p>`
+	$("#not_found").html(html);
+	$("#not_found").show();
+
+	
+})
+
+socket.on("unknownError", (key) => {
+	$("#Waiting").hide();
+	const html = `<h4> Error </h4> <p> An unknown error occured during results restoration for job ${key}. Contact us at cecile.hilpert@ibcp.fr </p>`
+	$("#error").html(html);
+	$("#error").show();
+})
+
 function treatResults(results, isSg) {
 	$("#Waiting").hide();
 	var data = results.data;
