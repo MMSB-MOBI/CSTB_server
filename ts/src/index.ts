@@ -12,7 +12,7 @@ const fs = require("fs")
 const mailManager = require("./mailManager")
 const jobManager = require('ms-jobmanager');
 const jsonfile = require('jsonfile'); 
-const SearchFn = require('fs-search-worker').SearchFn; 
+import {SearchFn} from 'fs-search-worker'; 
 
 const APP_PORT = 3002;
 const JM_ADRESS = "127.0.0.1";
@@ -194,33 +194,12 @@ _io.on('connection', (socket)=>{
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
             .on('end',() => {
-                let ans = {"data" : undefined};
-                let buffer:any
-                try {
-                    buffer = JSON.parse(_buffer);
-                } catch (e) {
-                    socket.emit('workflowError', "Can't parse sbatch output");
-                    return;
+                const [status, answer] = parseData(_buffer)
+                if(status) {
+                    socket.emit("resultsSpecific", answer)
+                    if (data.email) mailManager.send(data.email, answer.data[2])      
                 }
-
-                if (buffer.hasOwnProperty("emptySearch")) {
-                    logger.info(`JOB completed-- empty search\n${utils.format(buffer.emptySearch)}`);
-                    ans.data = ["Search yielded no results.", buffer.emptySearch];
-                    socket.emit('resultsSpecific', ans);
-                }
-                else if (buffer.hasOwnProperty("error")){
-                    logger.info(`JOB completed-- handled error\n${utils.format(buffer.error)}`)
-                    socket.emit('workflowError', buffer.error)
-                } else {
-                    logger.info(`JOB completed-- Found stuff`);
-                    logger.info(`${utils.inspect(buffer, false, null)}`);
-                    logger.info(typeof _buffer)
-                    logger.info(_buffer)
-                    let res = buffer;
-                    ans.data = [res.data, res.not_in,  res.tag, res.number_hits, res.data_card, res.gi, res.number_treated_hits, res.fasta_metadata, res.gene];
-                    socket.emit('resultsSpecific', ans);
-                }
-                
+                else socket.emit("workflowError", answer)                                      
             });
         });
         job.on("lostJob", ()=> socket.emit('workflowError', 'Job has been lost'));

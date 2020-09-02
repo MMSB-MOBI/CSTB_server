@@ -400,25 +400,35 @@ function submitSetupAllGenome() {
 }
 
 function submitSpecificGene(n_gene, percent_id, pam, sgrna_length) {
-	$("#Tabselection").hide();
 
-	$('#spec_tips').hide();
-	$('#ShowSeq').hide();
-	$('#tree_sg').hide()
-	$('#list_selection_sg').hide();
-	$('#other_parameters_sg').hide();
-	$('#Waiting').show();
+	let email_confirmation = true; 
+	if ( ! $('#email_sg').val()){
+		email_confirmation = window.confirm("You don't provide email. Are you sure you don't want to have access to your results later ?")
+	}
+
+	if (email_confirmation){
+		$("#Tabselection").hide();
+
+		$('#spec_tips').hide();
+		$('#ShowSeq').hide();
+		$('#tree_sg').hide()
+		$('#list_selection_sg').hide();
+		$('#other_parameters_sg').hide();
+		$('#Waiting').show();
 
 
-	socket.emit("submitSpecific", {
-		"seq": final_sequence,
-		"gi": $("#tree_include_sg").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
-		"gni": $("#tree_exclude_sg").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
-		"n": n_gene,
-		"pid": percent_id,
-		"pam": pam,
-		"sgrna_length": sgrna_length
-	});
+		socket.emit("submitSpecific", {
+			"seq": final_sequence,
+			"gi": $("#tree_include_sg").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
+			"gni": $("#tree_exclude_sg").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
+			"n": n_gene,
+			"pid": percent_id,
+			"pam": pam,
+			"sgrna_length": sgrna_length,
+			"email" : $('#email_sg').val()
+		});
+	}
+	
 
 }
 

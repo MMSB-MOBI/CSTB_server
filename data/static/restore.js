@@ -7,8 +7,10 @@ socket.on('connect', function() {
 });
 
 socket.on('displayResults', (data) => {
-    console.log("displayResults client")
-    treatResults(data, false); 
+	console.log("displayResults client")
+	if (data.data[8]) treatResults(data, true); //if gene given, specificGene treatment
+	else treatResults(data, false); 
+
 })
 
 socket.on("restoreNotFound", (key) => {
@@ -18,8 +20,6 @@ socket.on("restoreNotFound", (key) => {
 	<p> Your results for job ${key} are not available. Relaunch your search. </p>`
 	$("#not_found").html(html);
 	$("#not_found").show();
-
-	
 })
 
 socket.on("unknownError", (key) => {
