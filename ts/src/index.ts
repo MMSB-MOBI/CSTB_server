@@ -1,42 +1,32 @@
-let express = require('express');
+const express = require('express');
 const path = require('path');
-let app = express();
-let utils = require('util');
-let http = require('http').Server(app);
-let _io = require('socket.io')(http);
-
+const utils = require('util');
+const app = express();
+const http = require('http').Server(app);
+const _io = require('socket.io')(http);
 const program = require("commander");
 const logger = require("./logger").logger;
 const setLogLevel = require("./logger").setLogLevel;
 const setLogFile = require("./logger").setLogFile;
 const fs = require("fs")
-let mailManager = require("./mailManager")
+const mailManager = require("./mailManager")
+const jobManager = require('ms-jobmanager');
+const jsonfile = require('jsonfile'); 
 
-import jsonfile = require('jsonfile');
-import { Socket } from 'dgram';
+const APP_PORT = 3002;
+const JM_ADRESS = "127.0.0.1";
 
-let APP_PORT = 3002;
-let CACHE = "/data/dev/crispr/tmp";
-//let DATA_FOLDER = "/data/databases/mobi/crispr/reference_genomes";
-
-const STATICDIR = "/data/www_dev/crispr/lib/nCSTB/data/static"
-
-let jobManager = require('ms-jobmanager');
-
-let JM_ADRESS = "127.0.0.1";
-let JM_PORT = undefined;
-
-program
-.version('0.1.0')
-.option('-v, --verbosity [logLevel]', 'Set log level', setLogLevel, 'info')
-.option('-p, --port [TCP_PORT]', 'Job Manager socket')
-.option('-c, --conf [JSON_PARAM]', 'web service configuration file')
-.parse(process.argv);
-
-if (!program.port)
-    throw (`Please specify a port`);
-if (!program.conf)
-    throw (`Please specify a conf`);
+export interface Config {
+    couch_endpoint: string; 
+    name_treedb: string; 
+    name_taxondb: string; 
+    name_genomedb : string; 
+    coreScriptsFolder: string; 
+    blastdb: string; 
+    dataFolder: string; 
+    motif_broker_endpoint: string;
+    jm_cache_dir:string;  
+}
 
 function parseData(string_data:string) : [boolean, string | any] {
     let ans = {"data" : undefined};
@@ -47,7 +37,7 @@ function parseData(string_data:string) : [boolean, string | any] {
         return [false, "Can't parse sbatch output"];
     }
 
-    if (buffer.hasOwnProperty("emptySearch")) {
+    if (buffer.hasOwnProperty("emptySearch")) {
         logger.info(`JOB completed-- empty search\n${utils.format(buffer.emptySearch)}`);
         ans.data = ["Search yielded no results.", buffer.emptySearch];
         return [true, ans];
@@ -65,13 +55,29 @@ function parseData(string_data:string) : [boolean, string | any] {
 }
 
 
-mailManager.configure()
-let param = jsonfile.readFileSync(program.conf);
+program
+.version('0.1.0')
+.option('-v, --verbosity [logLevel]', 'Set log level', setLogLevel, 'info')
+.option('-p, --port [TCP_PORT]', 'Job Manager socket')
+.option('-c, --conf [JSON_PARAM]', 'web service configuration file')
+.parse(process.argv);
 
-JM_PORT = parseInt(program.port);
+if (!program.port)
+    throw (`Please specify a port`);
+if (!program.conf)
+    throw (`Please specify a conf`);
+
+const JM_PORT:number = parseInt(program.port);
+const param:Config = jsonfile.readFileSync(program.conf);
+//TO DO : Some type checking
+
+const CACHE:string = param.jm_cache_dir
+
+mailManager.configure()
 jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
     .on('ready', () => {
         logger.info("Starting web server");
+        
 app.use(express.static('data/static'));
 app.use(express.static('node_modules'));
 
@@ -105,68 +111,15 @@ app.get('/tree', (req, res) => {
   })
 })
 
-app.get('/test', function (req, res) {
-    res.send('Performing test');
-   // logger.info(__dirname);
-    let jobOptTest = {
-        "exportVar" : {
-            "rfg" : param.dataFolder,
-            "gi" : "Candidatus Blochmannia vafer str. BVAF GCF_000185985.2&Enterobacter sp. 638 GCF_000016325.1",
-            "gni" : "\"\"",
-            "pam" : "NGG",
-            "sl" : "20",
-            "URL_CRISPR" : param.url_vService
-            /*,
-            "HTTP_PROXY" : "",
-            "https_proxy" : "",
-            "HTTPS_PROXY" : ""*/
-        },
-        "modules" : ["crispr-tools", "pycouch"],
-        "jobProfile" : "crispr-dev",
-        "script" : `${param.coreScriptsFolder}/crispr_workflow.sh`
-    };
-    logger.info(`Trying to push ${utils.format(jobOptTest)}`);
-
-    let jobTest = jobManager.push(jobOptTest);
-    jobTest.on("completed",(stdout, stderr) => {
-        logger.info(`JOB completed\n${utils.format()}`);
-
-        stdout.on('data',(d)=>{logger.info(`${ d.toString() }`);});
-
-    });
-})
-
-
 app.get('/download/:job_id', (req, res) => {
     logger.info(`==>tmp/${req.params.job_id}`);
-    let _path = `/data/dev/crispr/tmp/${req.params.job_id}/${req.params.job_id}_results.tsv`;
+    let _path = `${CACHE}/${req.params.job_id}/${req.params.job_id}_results.tsv`;
     res.download(_path);
 });
 
-app.get('/test_pycouch', (req,res) => {
-        let jobOpt = {
-            "exportVar" : {
-                "COUCH_ENDPOINT": param.couch_endpoint
-            },
-            "modules" : ["crispr-prod"],
-            "jobProfile" : "crispr-dev",
-            "script" : `${param.coreScriptsFolder}/test_pycouch.sh`
-        };
-        logger.info(`Trying to push ${utils.format(jobOpt)}`);
-
-        let job = jobManager.push(jobOpt);
-        job.on("ready", () => {
-            res.send(job.id);
-            logger.info(`JOB ${job.id} sumitted`);
-
-        });
-})
-
 app.get('/results/:job_id', (req, res) => {
     logger.info("Restore results")
-    //res.send(`${req.params.job_id} results`)
-    res.sendFile(`${STATICDIR}/restore.html`);
-   //emit restore (job_id, directory)
+    res.sendFile(path.join(__dirname, "../data/static", "restore.html"));
 });
 
 
