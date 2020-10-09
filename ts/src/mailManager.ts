@@ -1,7 +1,8 @@
 const Email = require('email-templates');
 const nodemailer = require('nodemailer');
 var ejs = require('ejs');
-
+const logger = require("./logger").logger;
+const utils = require("util");
 let user, pass = null;
 let ibcpTransporter;
 let authorBot = 'cstb@ibcp.fr';
@@ -22,8 +23,9 @@ export function configure(opt):void{
       });
 }
 
-export function send(adress:string, jobKey:string):void{
+export function send(adress:string, jobKey:string){
     let data = { key : jobKey};
+
   
     let text = 'Dear user,\n\nYour job ' + jobKey + ' is completed.\n'
               + 'You can access your results by following this link : http://crispr-dev.ibcp.fr:/results/' + jobKey + '\n\n\t\t\tThe CSTB Service.\n'
@@ -39,11 +41,19 @@ export function send(adress:string, jobKey:string):void{
       text: text
     };
   
-    ibcpTransporter.sendMail(options, 
-      (err, info)=> {
-        console.log(info.envelope);
-        console.log(info.message.Id);}
-    );
+    return new Promise((resolve, reject) => {
+      ibcpTransporter.sendMail(options, 
+        (err, info)=> {
+          if(err){
+            reject(err)
+          }
+          else resolve(); 
+          //console.log(info.envelope);
+          //console.log(info.message.Id);
+        }
+      );
+    })
+    
         
   }
 

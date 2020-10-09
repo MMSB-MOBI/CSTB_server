@@ -197,7 +197,12 @@ _io.on('connection', (socket)=>{
                 const [status, answer] = parseData(_buffer)
                 if(status) {
                     socket.emit("resultsSpecific", answer)
-                    if (data.email) mailManager.send(data.email, answer.data[2])      
+                    if (data.email){
+                        mailManager.send(data.email, answer.data[2])
+                            .then(() => logger.info("mail send"))
+                            .catch((e) => logger.error("error while sending mail"))
+                    }
+                        
                 }
                 else socket.emit("workflowError", answer)                                      
             });
@@ -248,10 +253,15 @@ _io.on('connection', (socket)=>{
                             socket.emit("resultsAllGenomes", answer)
                             
                             if (data.email){
-                                logger.info("Send email")
                                 mailManager.send(data.email, answer.data[2])
-                            }
-                            
+                                    .then(() => logger.info("mail send"))
+                                    .catch((e) => {
+                                        logger.error("error while sending mail")
+                                        if (e.message === "No recipients defined"){
+                                            //warn client
+                                        }
+                                        })
+                            }                        
                         }
                         else{
                             socket.emit("workflowError", answer)
