@@ -24,7 +24,6 @@
 		<script type="text/javascript" charset="utf-8">
 	    var socket = io.connect('http://crispr-dev.ibcp.fr:80'); //3002
 	    socket.on('connect', function() {
-				console.log('connected');
         socket.emit('clientConnection', {data: 'I\'m connected!'});
 	    });
     </script>

@@ -360,7 +360,6 @@ function clearListView(suffix) {
 //            *  SUBMIT PARAMETERS *
 // *********************************************
 function submitSetupAllGenome() {
-	console.log("submit")
 
 	let email_confirmation = true; 
 	if ( ! $('#email').val()){

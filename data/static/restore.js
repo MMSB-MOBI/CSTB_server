@@ -1,20 +1,17 @@
 
 const socket = io.connect('http://crispr-dev.ibcp.fr:80'); //3002
 socket.on('connect', function() {
-    console.log('restore connected');
     const jobKey = document.URL.split("/").pop(); 
     socket.emit('restoreResults', jobKey);
 });
 
 socket.on('displayResults', (data) => {
-	console.log("displayResults client")
 	if (data.data[8]) treatResults(data, true); //if gene given, specificGene treatment
 	else treatResults(data, false); 
 
 })
 
 socket.on("restoreNotFound", (key) => {
-	console.log("not found")
 	$("#Waiting").hide();
 	const html = `<h4>Results not available</h4> 
 	<p> Your results for job ${key} are not available. Relaunch your search. </p>`
