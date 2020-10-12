@@ -56,21 +56,9 @@ function treatResults(results, isSg) {
 		node.setAttribute("all_data", JSON.stringify(data_card));
 		node.setAttribute("org_names", gi);
 		node.setAttribute("fasta_metadata", JSON.stringify(fasta_metadata));
-
-		infos = '<p>' + number_hits + ' hits have been found for this research';
-		if (parseInt(number_hits) > parseInt(number_treated_hits)){
-			infos += '. Only the first ' + number_treated_hits + ' are shown on the graphical interface. All hits can be found in downloadable raw results file. ';
-		}
-		
-		infos += '</br><i class="material-icons" id="drop_not_in off" class="drop" onclick="clickDrop(this)">arrow_drop_down</i>'
-		if (not_in != '') {
-			infos += '<p> All hits are absent from excluded genome(s) : ' + not_in;
-		}
-		else {
-			infos += '<p> No excluded genomes selected.</p>'
-		}
-		$('#infos').html(infos)
-		onDownload(tag); 
+		node.setAttribute("job_tag", tag)
+		node.setAttribute("excluded_names", not_in)
+		node.setAttribute("total_hits", number_hits)
 
 	}
 	else { // Check it works properly

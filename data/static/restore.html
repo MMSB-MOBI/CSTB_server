@@ -47,6 +47,45 @@
 			font-weight: bold;
 			text-decoration: none;
 		}
+
+		.loader {
+			border: 16px solid #f3f3f3; /* Light grey */
+			border-top: 16px solid #3498db; /* Blue */
+			border-radius: 50%;
+			width: 100px;
+			height: 100px;
+			animation: spin 2s linear infinite;
+		}
+
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+
+		.Waiting {
+			display: flex;
+			min-height: 60vh;
+		}
+
+		#ResGraph {
+			display:flex; 
+			flex-direction: column;
+			background: white;
+		}
+
+		footer {
+			display:grid; 
+			margin-top: auto;
+
+			padding: 34px 0;
+		}
+
+		body {
+			display: flex;
+			min-height: 100vh;
+			flex-direction: column;
+		}
+
 	</style>
 
 	<body>
@@ -58,17 +97,11 @@
 		</div>
 
 		<div id="Waiting">
-			<p> Reload your results.... </p>
+			<div class="loader w3-margin"></div>
+			<h2 class="w3-center">Reload your results... </h2>
 		</div>
 
 		<div id="Result" style="display:none">
-
-		  <a id='result-file' class="w3-btn w3-green"></a>
-		  
-		  <div class="w3-panel w3-pale-green w3-bottombar w3-border w3-border-green w3-center" id="infos">
-
-		  </div>
-
 			<div id="ResGraph">
 			</div>
 		</div>
@@ -83,6 +116,11 @@
 		</div>
 
 		<div style="height: auto;"></div>
+
+		<footer id='footer' class="w3-container w3-teal w3-small w3-tail w3-light-grey w3-center">
+			<span> Contact : cecile.hilpert@ibcp.fr</span>
+			<span>UMR 5086 MMSB</span>
+		</footer>
 
 
 	</body>
