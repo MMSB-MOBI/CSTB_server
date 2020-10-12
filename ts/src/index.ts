@@ -27,6 +27,7 @@ export interface Config {
     dataFolder: string; 
     motif_broker_endpoint: string;
     jm_cache_dir:string;  
+    profile:string; 
 }
 
 function parseData(string_data:string) : [boolean, string | any] {
@@ -82,9 +83,10 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
 app.use(express.static('data/static'));
 app.use(express.static('node_modules'));
 
+//Still working ??? Don't think so
 app.get('/kill/:jobid',  (req, res) => {
     let jobOptTest = {
-        "jobProfile" : "crispr-dev",
+        "jobProfile" : param.profile, 
         "cmd" : `scancel ${req.params.jobid}`
     };
     logger.info(`Trying to execute ${utils.format(jobOptTest)}`);
@@ -181,9 +183,9 @@ _io.on('connection', (socket)=>{
 
             },
             "modules" : ["crispr-prod/3.0.0", "blast+"],
-            "jobProfile" : "crispr-dev",
+            "jobProfile" : param.profile,
             "script" : `${param.coreScriptsFolder}/crispr_workflow_specific.sh`,
-            "sysSettingsKey" : "crispr-dev"
+            "sysSettingsKey" : param.profile
         };
 
         logger.info(`Trying to push ${utils.format(jobOpt)}`);
@@ -231,9 +233,9 @@ _io.on('connection', (socket)=>{
                 "COUCH_ENDPOINT": param.couch_endpoint
             },
             "modules" : ["crispr-prod/3.0.0"],
-            "jobProfile" : "crispr-dev",
+            "jobProfile" : param.profile,
             "script" : `${param.coreScriptsFolder}/crispr_workflow.sh`,
-            "sysSettingsKey" : "crispr-dev"
+            "sysSettingsKey" : param.profile
         };
         logger.info(`Trying to push ${utils.format(jobOpt)}`);
 
