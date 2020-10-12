@@ -445,7 +445,7 @@ function error_gestion(n_gene, percent_id, pam, sgrna_length) {
 }
 
 function setupAll() {
-	$('#footer').hide()
+	//$('#footer').hide()
 	$('#allg_tips').hide()
 	$('#AG_click').show()
 	$('#AG_click2').hide()
