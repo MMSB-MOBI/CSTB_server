@@ -80,8 +80,8 @@ jobManager.start({ 'port': JM_PORT, 'TCPip': JM_ADRESS })
     .on('ready', () => {
         logger.info("Starting web server");
         
-app.use(express.static('data/static'));
-app.use(express.static('node_modules'));
+app.use(express.static( path.join(__dirname, '../data/static') ));
+app.use(express.static( path.join(__dirname, '../node_modules') ));
 
 //Still working ??? Don't think so
 app.get('/kill/:jobid',  (req, res) => {
