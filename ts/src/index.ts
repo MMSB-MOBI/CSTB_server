@@ -120,6 +120,11 @@ app.get('/download/:job_id', (req, res) => {
     res.download(_path);
 });
 
+app.get('/results/download/:job_id', (req, res) => {
+    let _path = `${CACHE}/${req.params.job_id}/${req.params.job_id}_results.tsv`;
+    res.download(_path);
+});
+
 app.get('/results/:job_id', (req, res) => {
     logger.info("Restore results")
     res.sendFile(path.join(__dirname, "../data/static", "restore.html"));
