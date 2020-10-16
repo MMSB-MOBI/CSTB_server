@@ -41,7 +41,7 @@ function parseData(string_data:string) : [boolean, string | any] {
 
     if (buffer.hasOwnProperty("emptySearch")) {
         logger.info(`JOB completed-- empty search\n${utils.format(buffer.emptySearch)}`);
-        ans.data = ["Search yielded no results.", buffer.emptySearch];
+        ans.data = ["Search yielded no results.", buffer.emptySearch, buffer.tag];
         return [true, ans];
     }
     else if (buffer.hasOwnProperty("error")){
@@ -199,13 +199,17 @@ _io.on('connection', (socket)=>{
 
         job.on("completed",(stdout, stderr) => {
             //send email
+
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
             .on('end',() => {
                 const [status, answer] = parseData(_buffer)
+
                 if(status) {
+                    console.log("there is status")
                     socket.emit("resultsSpecific", answer)
                     if (data.email){
+                        console.log("I send an email")
                         mailManager.send(data.email, answer.data[2])
                             .then(() => logger.info("mail send"))
                             .catch((e) => logger.error("error while sending mail"))
@@ -255,6 +259,7 @@ _io.on('connection', (socket)=>{
         });
 
         job.on("completed",(stdout, stderr) => {
+            console.log("job object", utils.inspect(job));
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
                     .on('end',() => {
