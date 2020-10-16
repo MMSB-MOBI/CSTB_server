@@ -30,13 +30,13 @@ export interface Config {
     profile:string; 
 }
 
-function parseData(string_data:string) : [boolean, string | any] {
+function parseData(string_data:string, job_id:string) : [boolean, string | any] {
     let ans = {"data" : undefined};
     let buffer:any
     try {
         buffer = JSON.parse(string_data);
     } catch (e) {
-        return [false, "Can't parse sbatch output"];
+        return [false, "Can't parse sbatch output.\nJob id : " + job_id + ".\nContact us at cecile.hilpert@ibcp.fr"];
     }
 
     if (buffer.hasOwnProperty("emptySearch")) {
@@ -151,7 +151,7 @@ _io.on('connection', (socket)=>{
         searched_files.then((finded) => {
             //What to do if more than one file ? 
             const file = fs.readFileSync(finded[0][0])
-            const [status, answer] = parseData(file); 
+            const [status, answer] = parseData(file, job_key); 
             if (status) socket.emit("displayResults", answer);
             else socket.emit("workflowError", answer);
         }, (error) => {
@@ -203,7 +203,7 @@ _io.on('connection', (socket)=>{
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
             .on('end',() => {
-                const [status, answer] = parseData(_buffer)
+                const [status, answer] = parseData(_buffer, job.id)
 
                 if(status) {
                     console.log("there is status")
@@ -259,17 +259,16 @@ _io.on('connection', (socket)=>{
         });
 
         job.on("completed",(stdout, stderr) => {
-            console.log("job object", utils.inspect(job));
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
                     .on('end',() => {
-                        const [status, answer] = parseData(_buffer)
+                        const [status, answer] = parseData(_buffer, job.id)
                         
                         if(status) {
                             socket.emit("resultsAllGenomes", answer)
                             
                             if (data.email){
-                                mailManager.send(data.email, answer.data[2])
+                                mailManager.send(data.email, job.id)
                                     .then(() => logger.info("mail send"))
                                     .catch((e) => {
                                         logger.error("error while sending mail")
