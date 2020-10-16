@@ -15,7 +15,7 @@ const jsonfile = require('jsonfile');
 import {SearchFn} from 'fs-search-worker'; 
 
 const APP_PORT = 3002;
-const JM_ADRESS = "127.0.0.1";
+const JM_ADRESS = "192.168.117.150";
 
 export interface Config {
     couch_endpoint: string; 
@@ -191,6 +191,7 @@ _io.on('connection', (socket)=>{
         logger.info(`Trying to push ${utils.format(jobOpt)}`);
 
         let job = jobManager.push(jobOpt);
+
         job.on("completed",(stdout, stderr) => {
             //send email
             let _buffer = "";
@@ -209,7 +210,10 @@ _io.on('connection', (socket)=>{
                 else socket.emit("workflowError", answer)                                      
             });
         });
-        job.on("lostJob", ()=> socket.emit('workflowError', 'Job has been lost'));
+        job.on("lostJob", ()=>  {
+            logger.error(`Job lost ${job.id} replying to web client`);
+            socket.emit('workflowError', 'Job has been lost') ;
+        });
     });
 
     socket.on('submitAllGenomes', (data)=> {
