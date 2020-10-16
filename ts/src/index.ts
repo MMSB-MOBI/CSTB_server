@@ -15,7 +15,7 @@ const jsonfile = require('jsonfile');
 import {SearchFn} from 'fs-search-worker'; 
 
 const APP_PORT = 3002;
-const JM_ADRESS = "192.168.117.150";
+const JM_ADRESS = "127.0.0.1";
 
 export interface Config {
     couch_endpoint: string; 

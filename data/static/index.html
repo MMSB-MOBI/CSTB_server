@@ -16,13 +16,13 @@
 		<script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3-scale-radial.js"></script>
 
 		<!-- component for result page -->
-		<script type="module" src="http://cstb.ibcp.fr/@mmsb/result_page/dist/mycomponent/mycomponent.esm.js"></script>
-		<script nomodule="" src="http://cstb.ibcp.fr/@mmsb/result_page/dist/mycomponent/mycomponent.js"></script>
+		<script type="module" src="http://crispr-dev.ibcp.fr/@mmsb/result_page/dist/mycomponent/mycomponent.esm.js"></script>
+		<script nomodule="" src="http://crispr-dev.ibcp.fr/@mmsb/result_page/dist/mycomponent/mycomponent.js"></script>
 		
 		<!-- socket IO -->
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
 		<script type="text/javascript" charset="utf-8">
-	    var socket = io.connect('http://cstb.ibcp.fr:80'); //3002
+	    var socket = io.connect('http://crispr-dev.ibcp.fr:80'); //3002
 	    socket.on('connect', function() {
         socket.emit('clientConnection', {data: 'Socket connection'});
 	    });

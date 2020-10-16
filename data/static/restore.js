@@ -1,5 +1,5 @@
 
-const socket = io.connect('http://cstb.ibcp.fr:80'); //3002
+const socket = io.connect('http://crispr-dev.ibcp.fr:80'); //3002
 socket.on('connect', function() {
     const jobKey = document.URL.split("/").pop(); 
     socket.emit('restoreResults', jobKey);
@@ -66,8 +66,4 @@ function treatResults(results, isSg) {
 		infos = '<p>' + data[0] + '</p> <p> ' + data[1] + '</p>'
 		$("#no_result").html(infos);
 	}
-}
-
-function onDownload(data) {
-	$('#result-file').html('<a href="http://cstb.ibcp.fr/download/' + data + '" >Download results</a>')
 }

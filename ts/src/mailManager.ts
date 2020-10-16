@@ -28,7 +28,7 @@ export function send(adress:string, jobKey:string){
 
   
     let text = 'Dear user,\n\nYour job ' + jobKey + ' is completed.\n'
-              + 'You can access your results by following this link : http://cstb.ibcp.fr:/results/' + jobKey + '\n\n\t\t\tThe CSTB Service.\n'
+              + 'You can access your results by following this link : http://crispr-dev.ibcp.fr:/results/' + jobKey + '\n\n\t\t\tThe CSTB Service.\n'
               + '***This is an automatically generated email, please do not reply';
     let subject = ejs.render('CSTB job <%= key %> completed', data);
   
