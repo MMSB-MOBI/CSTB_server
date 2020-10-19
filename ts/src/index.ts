@@ -36,7 +36,7 @@ function parseData(string_data:string, job_id:string) : [boolean, string | any] 
     try {
         buffer = JSON.parse(string_data);
     } catch (e) {
-        return [false, "Can't parse sbatch output.\nJob id : " + job_id + ".\nContact us at cecile.hilpert@ibcp.fr"];
+        return [false, "Can't parse sbatch output.\nJob id : " + job_id + ".\nContact us at cstb-support@ibcp.fr"];
     }
 
     if (buffer.hasOwnProperty("emptySearch")) {

@@ -21,7 +21,7 @@ socket.on("restoreNotFound", (key) => {
 
 socket.on("unknownError", (key) => {
 	$("#Waiting").hide();
-	const html = `<h4> Error </h4> <p> An unknown error occured during results restoration for job ${key}. Contact us at cecile.hilpert@ibcp.fr </p>`
+	const html = `<h4> Error </h4> <p> An unknown error occured during results restoration for job ${key}. Contact us at cstb-support@ibcp.fr </p>`
 	$("#error").html(html);
 	$("#error").show();
 })
