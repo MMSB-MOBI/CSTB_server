@@ -193,23 +193,22 @@ _io.on('connection', (socket)=>{
             "sysSettingsKey" : param.profile
         };
 
-        logger.info(`Trying to push ${utils.format(jobOpt)}`);
+        logger.debug(`Trying to push ${utils.format(jobOpt)}`);
 
         let job = jobManager.push(jobOpt);
 
+        logger.info(`${job.id} pushed.`)
+
         job.on("completed",(stdout, stderr) => {
             //send email
-
+            logger.info(`${job.id} completed.`)
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
             .on('end',() => {
                 const [status, answer] = parseData(_buffer, job.id)
-
                 if(status) {
-                    console.log("there is status")
                     socket.emit("resultsSpecific", answer)
                     if (data.email){
-                        console.log("I send an email")
                         mailManager.send(data.email, answer.data[2])
                             .then(() => logger.info("mail send"))
                             .catch((e) => logger.error("error while sending mail"))
@@ -226,7 +225,7 @@ _io.on('connection', (socket)=>{
     });
 
     socket.on('submitAllGenomes', (data)=> {
-        logger.info(`socket:submitAllGenomes\n${utils.format(data)}`);
+        logger.info(`socket:submitAllGenomes\n`);
 
         logger.info(`included genomes:\n${utils.format(data.gi)}`);
         logger.info(`excluded genomes:\n${utils.format(data.gni)}`);
@@ -250,25 +249,28 @@ _io.on('connection', (socket)=>{
             "script" : `${param.coreScriptsFolder}/crispr_workflow.sh`,
             "sysSettingsKey" : param.profile
         };
-        logger.info(`Trying to push ${utils.format(jobOpt)}`);
+        //logger.info(`Trying to push ${utils.format(jobOpt)}`);
 
         let job = jobManager.push(jobOpt);
+        logger.info(`JOB ${job.id} pushed`)
         job.on("ready", () => {
-            logger.info(`JOB ${job.id} sumitted`);
+            logger.info(`JOB ${job.id} submitted`);
             socket.emit("submitted", { "id" : job.id });
         });
 
         job.on("completed",(stdout, stderr) => {
+            logger.info(`JOB ${job.id} completed`);
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
                     .on('end',() => {
                         const [status, answer] = parseData(_buffer, job.id)
+                        logger.info(utils.format(answer))
                         
                         if(status) {
                             socket.emit("resultsAllGenomes", answer)
                             
                             if (data.email){
-                                mailManager.send(data.email, job.id)
+                                mailManager.send(data.email, answer.data[2])
                                     .then(() => logger.info("mail send"))
                                     .catch((e) => {
                                         logger.error("error while sending mail")
