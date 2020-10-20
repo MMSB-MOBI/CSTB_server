@@ -249,22 +249,27 @@ _io.on('connection', (socket)=>{
             "script" : `${param.coreScriptsFolder}/crispr_workflow.sh`,
             "sysSettingsKey" : param.profile
         };
-        //logger.info(`Trying to push ${utils.format(jobOpt)}`);
+        logger.debug(`Trying to push ${utils.format(jobOpt)}`);
 
         let job = jobManager.push(jobOpt);
         logger.info(`JOB ${job.id} pushed`)
+
+
         job.on("ready", () => {
+            logger.info("STATUS ready")
             logger.info(`JOB ${job.id} submitted`);
             socket.emit("submitted", { "id" : job.id });
         });
 
+        job.on("submitted", () => logger.info("STATUS submitted"))
+
         job.on("completed",(stdout, stderr) => {
+            logger.info("STATUS completed"); 
             logger.info(`JOB ${job.id} completed`);
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
                     .on('end',() => {
                         const [status, answer] = parseData(_buffer, job.id)
-                        logger.info(utils.format(answer))
                         
                         if(status) {
                             socket.emit("resultsAllGenomes", answer)
@@ -286,7 +291,9 @@ _io.on('connection', (socket)=>{
                     });
         
         });
-        job.on("lostJob", ()=> socket.emit('workflowError', 'Job has been lost'));
+        job.on("lostJob", ()=> {
+            logger.info("STATUS lost"); 
+            socket.emit('workflowError', `Job ${job.id} has been lost. Contact support : cstb-support.ibcp.fr`)});
         
     });
 
