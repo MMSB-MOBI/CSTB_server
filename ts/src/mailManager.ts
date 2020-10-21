@@ -32,7 +32,7 @@ function generateText(jobKey:string, status:job_status): string{
   let text = `Dear user, \n\n Your job ${jobKey} `
   if(status == "complete"){
     logger.info("generateText status complete")
-    text = text + `is completed. \n You can access your results by following this link : http://crispr-dev.ibcp.fr:/results/${jobKey}***`
+    text = text + `is completed. \n You can access your results by following this link : http://crispr-dev.ibcp.fr:/results/${jobKey}`
   }
   else if(status == "error"){
     logger.info("generateText status error")
