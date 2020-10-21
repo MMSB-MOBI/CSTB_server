@@ -13,6 +13,7 @@ const mailManager = require("./mailManager")
 const jobManager = require('ms-jobmanager');
 const jsonfile = require('jsonfile'); 
 import {SearchFn} from 'fs-search-worker'; 
+import { job_status } from './mailManager'; 
 
 const APP_PORT = 3002;
 const JM_ADRESS = "127.0.0.1";
@@ -30,31 +31,57 @@ export interface Config {
     profile:string; 
 }
 
-function parseData(string_data:string, job_id:string) : [boolean, string | any] {
+function parseData(string_data:string, job_id:string) : [boolean, string | any, string] {
     let ans = {"data" : undefined};
     let buffer:any
     try {
         buffer = JSON.parse(string_data);
     } catch (e) {
-        return [false, "Can't parse sbatch output.\nJob id : " + job_id + ".\nContact us at cstb-support@ibcp.fr"];
+        return [false, "Can't parse sbatch output.\nJob id : " + job_id + ".\nAn email has automatically been send to support.", job_id];
     }
 
     if (buffer.hasOwnProperty("emptySearch")) {
         logger.info(`JOB completed-- empty search\n${utils.format(buffer.emptySearch)}`);
         ans.data = ["Search yielded no results.", buffer.emptySearch, buffer.tag];
-        return [true, ans];
+        return [true, ans, buffer.tag];
     }
     else if (buffer.hasOwnProperty("error")){
         logger.info(`JOB completed-- handled error\n${utils.format(buffer.error)}`)
-        return [false, buffer.error];
+        return [false, buffer.error, buffer.tag];
     } else {
         logger.info(`JOB completed-- Found stuff`);
         //logger.info(`${utils.inspect(buffer, false, null)}`);
         let res = buffer;
         ans.data = [res.data, res.not_in,  res.tag, res.number_hits, res.data_card, res.gi, res.number_treated_hits, res.fasta_metadata, res.gene];
-        return [true, ans]; 
+        return [true, ans, buffer.tag]; 
     }
 }
+
+function sendMail(mail_adress:string|undefined, job_id:string, status:job_status){
+    logger.info("sendMail function called")
+
+    if (status === "error"){
+        mailManager.sendSupport(job_id, mail_adress)
+            .then(() => logger.info("mail send"))
+            .catch((e) => {
+                logger.error("error while sending mail")
+            })
+    }
+
+    if (mail_adress){
+        mailManager.send(mail_adress, job_id, status)
+        .then(() => logger.info("mail send"))
+        .catch((e) => {
+            logger.error("error while sending mail")
+            if (e.message === "No recipients defined"){
+                //warn user
+            }
+        })
+    }
+    
+}
+
+
 
 
 program
@@ -151,7 +178,7 @@ _io.on('connection', (socket)=>{
         searched_files.then((finded) => {
             //What to do if more than one file ? 
             const file = fs.readFileSync(finded[0][0])
-            const [status, answer] = parseData(file, job_key); 
+            const [status, answer, job_id] = parseData(file, job_key); 
             if (status) socket.emit("displayResults", answer);
             else socket.emit("workflowError", answer);
         }, (error) => {
@@ -200,27 +227,26 @@ _io.on('connection', (socket)=>{
         logger.info(`${job.id} pushed.`)
 
         job.on("completed",(stdout, stderr) => {
-            //send email
             logger.info(`${job.id} completed.`)
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
             .on('end',() => {
-                const [status, answer] = parseData(_buffer, job.id)
+                const [status, answer, job_id] = parseData(_buffer, job.id)
                 if(status) {
                     socket.emit("resultsSpecific", answer)
-                    if (data.email){
-                        mailManager.send(data.email, answer.data[2])
-                            .then(() => logger.info("mail send"))
-                            .catch((e) => logger.error("error while sending mail"))
-                    }
+                    sendMail(data.email, job_id, "complete")
                         
                 }
-                else socket.emit("workflowError", answer)                                      
+                else {
+                    socket.emit("workflowError", answer)
+                    sendMail(data.email, job_id, "error")
+                }                                      
             });
         });
         job.on("lostJob", ()=>  {
             logger.error(`Job lost ${job.id} replying to web client`);
-            socket.emit('workflowError', 'Job has been lost') ;
+            socket.emit('workflowError', `Job ${job.id} has been lost. An email has automatically been send to support.`) ;
+            sendMail(data.email, job.id, "error")
         });
     });
 
@@ -254,7 +280,6 @@ _io.on('connection', (socket)=>{
         let job = jobManager.push(jobOpt);
         logger.info(`JOB ${job.id} pushed`)
 
-
         job.on("ready", () => {
             logger.info("STATUS ready")
             logger.info(`JOB ${job.id} submitted`);
@@ -269,32 +294,28 @@ _io.on('connection', (socket)=>{
             let _buffer = "";
             stdout.on('data',(d)=>{_buffer += d.toString();})
                     .on('end',() => {
-                        const [status, answer] = parseData(_buffer, job.id)
+                        const [status, answer, job_id] = parseData(_buffer, job.id)
                         
                         if(status) {
+                            logger.info("job is ok")
                             socket.emit("resultsAllGenomes", answer)
-                            
-                            if (data.email){
-                                mailManager.send(data.email, answer.data[2])
-                                    .then(() => logger.info("mail send"))
-                                    .catch((e) => {
-                                        logger.error("error while sending mail")
-                                        if (e.message === "No recipients defined"){
-                                            //warn client
-                                        }
-                                        })
-                            }                        
+                            sendMail(data.email, job_id, "complete")
+                      
                         }
                         else{
+                            logger.info("job error")
                             socket.emit("workflowError", answer)
+                            sendMail(data.email, job_id, "error")
+
                         }
                     });
         
         });
         job.on("lostJob", ()=> {
             logger.info("STATUS lost"); 
-            socket.emit('workflowError', `Job ${job.id} has been lost. Contact support : cstb-support.ibcp.fr`)});
-        
+            socket.emit('workflowError', `Job ${job.id} has been lost. An email has automatically been send to support.`)
+            sendMail(data.email, job.id, "error")
+        });
     });
 
     }); // io closure
