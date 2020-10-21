@@ -358,15 +358,30 @@ function clearListView(suffix) {
 	}
 }
 
+function validEmail(mail_adress){
+	const mail_regex =  new RegExp('^[\\w.]+@\\w+\\.[A-Za-z]{2,3}$')
+	return mail_regex.test(mail_adress); 
+  }
+
 // *********************************************
 //            *  SUBMIT PARAMETERS *
 // *********************************************
 function submitSetupAllGenome() {
-
 	let email_confirmation = true; 
 	if ( ! $('#email').val()){
 		email_confirmation = window.confirm("You don't provide email. Are you sure you don't want to have access to your results later ?")
 	}
+	
+	else{
+		console.log()
+		if (! validEmail($('#email').val())){
+			window.alert("Wrong email format") 
+			email_confirmation = false; 
+		}; 
+		
+	}
+
+
 
 	if(email_confirmation){
 		$('#Tabselection').hide()
