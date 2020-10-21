@@ -19,6 +19,18 @@ socket.on("workflowError", function(msg) {
 	treatError(msg);
 }) 
 
+socket.on("mailSend", function(mail_adress){
+	console.log("socket on mailSend"); 
+	$(".mail-send").show(); 
+	$(".mail-send").html(`<span> Email to restore results has been send to ${mail_adress}. </span>`); 
+})
+
+socket.on("mailError", function(mail_adress){
+	$(".mail-error").show(); 
+	$(".mail-error").html(`<span> Email to restore results could not be sent to ${mail_adress}. </span>`); 
+
+})
+
 
 
 // *********************************************
