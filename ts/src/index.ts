@@ -57,12 +57,12 @@ function parseData(string_data:string, job_id:string) : [boolean, string | any, 
     }
 }
 
-function sendMail(mail_adress:string|undefined, job_id:string, status:job_status){
+function sendMail(mail_adress:string|undefined, job_id:string, status:job_status, socket){
     logger.info("sendMail function called")
 
     if (status === "error"){
         mailManager.sendSupport(job_id, mail_adress)
-            .then(() => logger.info("mail send"))
+            .then(() => logger.info("Mail send to support"))
             .catch((e) => {
                 logger.error("error while sending mail")
             })
@@ -70,12 +70,10 @@ function sendMail(mail_adress:string|undefined, job_id:string, status:job_status
 
     if (mail_adress){
         mailManager.send(mail_adress, job_id, status)
-        .then(() => logger.info("mail send"))
+        .then(() => {logger.info("Mail send to user"); socket.emit("mailSend", mail_adress)})
         .catch((e) => {
             logger.error("error while sending mail")
-            if (e.message === "No recipients defined"){
-                //warn user
-            }
+            socket.emit("mailError", mail_adress)
         })
     }
     
@@ -234,19 +232,19 @@ _io.on('connection', (socket)=>{
                 const [status, answer, job_id] = parseData(_buffer, job.id)
                 if(status) {
                     socket.emit("resultsSpecific", answer)
-                    sendMail(data.email, job_id, "complete")
+                    sendMail(data.email, job_id, "complete", socket)
                         
                 }
                 else {
                     socket.emit("workflowError", answer)
-                    sendMail(data.email, job_id, "error")
+                    sendMail(data.email, job_id, "error", socket)
                 }                                      
             });
         });
         job.on("lostJob", ()=>  {
             logger.error(`Job lost ${job.id} replying to web client`);
             socket.emit('workflowError', `Job ${job.id} has been lost. An email has automatically been send to support.`) ;
-            sendMail(data.email, job.id, "error")
+            sendMail(data.email, job.id, "error", socket)
         });
     });
 
@@ -299,13 +297,13 @@ _io.on('connection', (socket)=>{
                         if(status) {
                             logger.info("job is ok")
                             socket.emit("resultsAllGenomes", answer)
-                            sendMail(data.email, job_id, "complete")
+                            sendMail(data.email, job_id, "complete", socket)
                       
                         }
                         else{
                             logger.info("job error")
                             socket.emit("workflowError", answer)
-                            sendMail(data.email, job_id, "error")
+                            sendMail(data.email, job_id, "error", socket)
 
                         }
                     });
@@ -314,7 +312,7 @@ _io.on('connection', (socket)=>{
         job.on("lostJob", ()=> {
             logger.info("STATUS lost"); 
             socket.emit('workflowError', `Job ${job.id} has been lost. An email has automatically been send to support.`)
-            sendMail(data.email, job.id, "error")
+            sendMail(data.email, job.id, "error", socket)
         });
     });
 
