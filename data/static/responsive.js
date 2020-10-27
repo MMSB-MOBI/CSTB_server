@@ -53,7 +53,7 @@ function displayTree(suffix, searchType, treeType) {
 
 	$(treeType + suffix).jstree({
 		"core": {
-			'data': { "url": "http://cstb.ibcp.fr:80/tree", "dataType": "json", "error": function(e) {
+			'data': { "url": "https://cstb.ibcp.fr/tree", "dataType": "json", "error": function(e) {
 				//console.log("error database", e.status, e.statusText, e);
 				$(treeType + suffix).html(`Error while try to reach database (${e.status} : ${e.statusText})`)
 			}},
