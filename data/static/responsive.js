@@ -375,53 +375,48 @@ function validEmail(mail_adress){
 	return mail_regex.test(mail_adress); 
   }
 
+function mailOk(){
+	const provided_mail = $('#email').val()
+	if (provided_mail){
+		if (! validEmail(provided_mail)){
+			window.alert("Wrong email format")
+			return false
+		}
+		else{
+			return true
+		}
+	}
+	else{
+		window.alert("You have to provide email adress")
+		return false
+	}
+}
+
 // *********************************************
 //            *  SUBMIT PARAMETERS *
 // *********************************************
 function submitSetupAllGenome() {
-	let email_confirmation = true; 
-	if ( ! $('#email').val()){
-		email_confirmation = window.confirm("You don't provide email. Are you sure you don't want to have access to your results later ?")
-	}
 	
-	else{
-		console.log()
-		if (! validEmail($('#email').val())){
-			window.alert("Wrong email format") 
-			email_confirmation = false; 
-		}; 
-		
-	}
-
-
-
-	if(email_confirmation){
+	if (mailOk()){
 		$('#Tabselection').hide()
-		$('#allg_tips').hide()
-		$('#list_selection').hide()
-		$('#other_parameters').hide()
+			$('#allg_tips').hide()
+			$('#list_selection').hide()
+			$('#other_parameters').hide()
 
-		$('#Waiting').show()
-		socket.emit('submitAllGenomes', {
-			"gi": $("#tree_include").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
-			"gni": $("#tree_exclude").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
-			"pam": $("select[name='pam_AllG'] > option:selected").val(),
-			"sgrna_length": $("select[name='sgrna-length_AllG'] > option:selected").val(),
-			"email" : $('#email').val()
-		});
+			$('#Waiting').show()
+			socket.emit('submitAllGenomes', {
+				"gi": $("#tree_include").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
+				"gni": $("#tree_exclude").jstree('get_bottom_selected', true).map(node => node.original.genome_uuid),
+				"pam": $("select[name='pam_AllG'] > option:selected").val(),
+				"sgrna_length": $("select[name='sgrna-length_AllG'] > option:selected").val(),
+				"email" : $('#email').val()
+			});
 	}
-	
-
 }
 
 function submitSpecificGene(n_gene, percent_id, pam, sgrna_length) {
 
-	let email_confirmation = true; 
-	if ( ! $('#email_sg').val()){
-		email_confirmation = window.confirm("You don't provide email. Are you sure you don't want to have access to your results later ?")
-	}
-
-	if (email_confirmation){
+	if (mailOk()){
 		$("#Tabselection").hide();
 
 		$('#spec_tips').hide();
