@@ -375,8 +375,14 @@ function validEmail(mail_adress){
 	return mail_regex.test(mail_adress); 
   }
 
-function mailOk(){
-	const provided_mail = $('#email').val()
+function mailOk(sg=false){
+	let provided_mail = ""
+	if (sg) {
+		provided_mail = $('#email_sg').val()
+	}
+	else {
+		provided_mail = $('#email').val()
+	}
 	if (provided_mail){
 		if (! validEmail(provided_mail)){
 			window.alert("Wrong email format")
@@ -416,7 +422,7 @@ function submitSetupAllGenome() {
 
 function submitSpecificGene(n_gene, percent_id, pam, sgrna_length) {
 
-	if (mailOk()){
+	if (mailOk(sg=true)){
 		$("#Tabselection").hide();
 
 		$('#spec_tips').hide();
