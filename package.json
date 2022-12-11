@@ -21,7 +21,7 @@
     "@types/express": "^4.17.6",
     "@types/node": "^10.17.26",
     "commander": "^2.20.3",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "jsonfile": "^5.0.0",
     "ms-jobmanager": "2.1.0",
     "nano": "^8.2.2",
